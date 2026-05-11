@@ -1,0 +1,15 @@
+# IDE
+.idea/
+
+# Сборка
+target/
+*.class
+*.jar
+*.war
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
