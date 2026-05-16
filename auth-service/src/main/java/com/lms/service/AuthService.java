@@ -1,9 +1,9 @@
 package com.lms.service;
 
+import com.lms.common.exception.InvalidCredentialsException;
+import com.lms.common.exception.UserAlreadyExistsException;
 import com.lms.dto.LoginRequest;
 import com.lms.dto.RegisterRequest;
-import com.lms.exception.InvalidCredentialsException;
-import com.lms.exception.UserAlreadyExistsException;
 import com.lms.model.User;
 import com.lms.repository.UserRepository;
 import com.lms.security.JwtProvider;
