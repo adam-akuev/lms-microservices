@@ -1,11 +1,9 @@
-package com.lms.exception;
+package com.lms.common.exception;
 
-public class ResourceNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class ResourceNotFoundException extends BaseException {
     public ResourceNotFoundException(String message) {
-        super(message);
-    }
-
-    public ResourceNotFoundException(String resourceName, Long id) {
-        super(resourceName + " с id = " + id + " не найден!");
+        super(message, HttpStatus.NOT_FOUND);
     }
 }

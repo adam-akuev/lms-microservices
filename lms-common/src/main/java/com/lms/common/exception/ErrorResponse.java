@@ -1,4 +1,4 @@
-package com.lms.exception;
+package com.lms.common.exception;
 
 import java.time.LocalDateTime;
 
