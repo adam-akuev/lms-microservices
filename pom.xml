@@ -30,6 +30,7 @@
         <module>student-service</module>
         <module>notification-service</module>
         <module>lms-common</module>
+        <module>lms-security</module>
     </modules>
 
     <dependencyManagement>

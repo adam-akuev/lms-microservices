@@ -13,3 +13,11 @@ Thumbs.db
 
 # Логи
 *.log
+
+# Исключаем application.yaml с локальными настройками
+**/src/main/resources/application.yaml
+**/src/main/resources/application.yml
+**/src/main/resources/application.properties
+
+# Если другие ресурсы тоже локальные
+*/src/main/resources/
