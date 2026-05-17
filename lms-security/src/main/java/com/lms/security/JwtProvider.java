@@ -29,12 +29,13 @@ public class JwtProvider {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String email, String role) {
+    public String generateToken(Long id, String email, String role) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .subject(email)
+                .claim("id", id)
                 .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -77,5 +78,15 @@ public class JwtProvider {
         }
 
         return List.of(new SimpleGrantedAuthority(role));
+    }
+
+    public Long getIdFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("id", Long.class);
     }
 }
