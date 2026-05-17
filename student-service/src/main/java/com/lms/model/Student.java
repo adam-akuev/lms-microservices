@@ -19,8 +19,7 @@ public class Student {
     @Id
     private Long id;
 
-    private String firstName;
-    private String lastName;
+    private String fullName;
     private String phone;
     private LocalDate birthDate;
 }

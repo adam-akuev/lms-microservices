@@ -3,8 +3,7 @@ package com.lms.dto;
 import java.time.LocalDate;
 
 public record StudentRequest(
-        String firstName,
-        String lastName,
+        String fullName,
         String phone,
         LocalDate birthDate
 ) {}
