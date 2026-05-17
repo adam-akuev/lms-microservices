@@ -42,9 +42,17 @@ public class StudentService {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Профиль студента не найден!"));
 
-        student.setFullName(request.fullName());
-        student.setPhone(request.phone());
-        student.setBirthDate(request.birthDate());
+        if (request.fullName() != null) {
+            student.setFullName(request.fullName());
+        }
+
+        if (request.phone() != null) {
+            student.setPhone(request.phone());
+        }
+
+        if (request.birthDate() != null) {
+            student.setBirthDate(request.birthDate());
+        }
 
         Student updatedStudent = studentRepository.save(student);
         return StudentResponse.fromEntity(updatedStudent);
