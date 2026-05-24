@@ -34,12 +34,4 @@ public class EnrollmentController {
         Long studentId = jwtProvider.getIdFromToken(token.substring(7));
         return ResponseEntity.ok(enrollmentService.getStudentCourseIds(studentId));
     }
-
-    @GetMapping("/check")
-    public ResponseEntity<Boolean> checkEnrollment(
-            @RequestParam Long studentId,
-            @RequestParam Long courseId
-    ) {
-        return ResponseEntity.ok(enrollmentService.isStudentEnrolled(studentId, courseId));
-    }
 }

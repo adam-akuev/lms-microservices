@@ -51,4 +51,9 @@ public class EnrollmentService {
 
         return enrollments.stream().map(Enrollment::getCourseId).toList();
     }
+
+    @Transactional
+    public void cascadeDeleteEnrollments(Long courseId) {
+        enrollmentRepository.deleteByCourseId(courseId);
+    }
 }

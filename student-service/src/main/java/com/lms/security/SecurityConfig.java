@@ -23,7 +23,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/students/internal/create").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/enrollments/check").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/api/enrollments/internal/courses/{courseId}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/check").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
