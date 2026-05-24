@@ -1,4 +1,4 @@
-package com.lms.dto;
+package com.lms.dto.student;
 
 import com.lms.model.Student;
 

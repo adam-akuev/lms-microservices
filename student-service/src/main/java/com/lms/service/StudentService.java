@@ -2,20 +2,27 @@ package com.lms.service;
 
 import com.lms.common.exception.BaseException;
 import com.lms.common.exception.ResourceNotFoundException;
-import com.lms.dto.StudentRequest;
-import com.lms.dto.StudentResponse;
+import com.lms.dto.student.StudentRequest;
+import com.lms.dto.student.StudentResponse;
 import com.lms.dto.internal.CreateStudentProfileRequest;
+import com.lms.model.Enrollment;
 import com.lms.model.Student;
+import com.lms.repository.EnrollmentRepository;
 import com.lms.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     public StudentResponse getProfileById(Long id) {
         Student student = studentRepository.findById(id)
@@ -24,6 +31,7 @@ public class StudentService {
         return StudentResponse.fromEntity(student);
     }
 
+    @Transactional
     public void createProfile(CreateStudentProfileRequest request) {
         if (studentRepository.existsById(request.id())) {
             throw new BaseException("Профиль студента с таким ID уже существует", HttpStatus.CONFLICT);
@@ -38,6 +46,7 @@ public class StudentService {
          studentRepository.save(student);
     }
 
+    @Transactional
     public StudentResponse updateProfile(Long id, StudentRequest request) {
         Student student = studentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Профиль студента не найден!"));
@@ -56,5 +65,11 @@ public class StudentService {
 
         Student updatedStudent = studentRepository.save(student);
         return StudentResponse.fromEntity(updatedStudent);
+    }
+
+    public void validateStudentExists(Long studentId) {
+        if (!studentRepository.existsById(studentId)) {
+            throw new ResourceNotFoundException("Студент с ID " + studentId + " не найден");
+        }
     }
 }

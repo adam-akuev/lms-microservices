@@ -1,11 +1,12 @@
 package com.lms.controller;
 
-import com.lms.dto.StudentRequest;
-import com.lms.dto.StudentResponse;
+import com.lms.dto.student.StudentRequest;
+import com.lms.dto.student.StudentResponse;
 import com.lms.security.JwtProvider;
 import com.lms.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
