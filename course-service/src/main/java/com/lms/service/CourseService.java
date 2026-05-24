@@ -2,8 +2,8 @@ package com.lms.service;
 
 import com.lms.client.EnrollmentClient;
 import com.lms.common.exception.ResourceNotFoundException;
-import com.lms.dto.CourseRequest;
-import com.lms.dto.CourseResponse;
+import com.lms.dto.course.CourseRequest;
+import com.lms.dto.course.CourseResponse;
 import com.lms.model.Course;
 import com.lms.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
