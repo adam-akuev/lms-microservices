@@ -1,7 +1,7 @@
 package com.lms.controller;
 
-import com.lms.dto.CourseRequest;
-import com.lms.dto.CourseResponse;
+import com.lms.dto.course.CourseRequest;
+import com.lms.dto.course.CourseResponse;
 import com.lms.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

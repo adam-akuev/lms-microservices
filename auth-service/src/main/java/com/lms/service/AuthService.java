@@ -1,9 +1,12 @@
 package com.lms.service;
 
+import com.lms.client.StudentClient;
 import com.lms.common.exception.InvalidCredentialsException;
 import com.lms.common.exception.UserAlreadyExistsException;
 import com.lms.dto.LoginRequest;
 import com.lms.dto.RegisterRequest;
+import com.lms.dto.internal.CreateStudentProfileRequest;
+import com.lms.model.Role;
 import com.lms.model.User;
 import com.lms.repository.UserRepository;
 import com.lms.security.JwtProvider;
@@ -20,25 +23,23 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final StudentClient studentClient;
+    private final UserService userService;
 
-    @Transactional
     public void register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
+        User user = userService.saveNewUser(request);
+
+        if (request.role() == Role.ROLE_STUDENT) {
+            CreateStudentProfileRequest studentProfileRequest = new CreateStudentProfileRequest(
+                    user.getId(),
+                    request.fullName(),
+                    request.phoneNumber()
+            );
+
+            studentClient.createProfile(studentProfileRequest);
         }
-
-        User user = new User();
-        user.setEmail(request.email());
-        user.setFullName(request.fullName());
-        user.setPhoneNumber(request.phoneNumber());
-        user.setRole(request.role());
-
-        user.setPassword(passwordEncoder.encode(request.password()));
-
-        userRepository.save(user);
     }
 
-    @Transactional
     public String login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException("Неверный email или пароль"));
@@ -47,6 +48,6 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        return jwtProvider.generateToken(user.getEmail(), user.getRole().name());
+        return jwtProvider.generateToken(user.getId(), user.getEmail(), user.getRole().name());
     }
 }

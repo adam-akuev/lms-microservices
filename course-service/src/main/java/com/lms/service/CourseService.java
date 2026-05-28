@@ -1,19 +1,23 @@
 package com.lms.service;
 
+import com.lms.client.EnrollmentClient;
 import com.lms.common.exception.ResourceNotFoundException;
-import com.lms.dto.CourseRequest;
-import com.lms.dto.CourseResponse;
+import com.lms.dto.course.CourseRequest;
+import com.lms.dto.course.CourseResponse;
 import com.lms.model.Course;
 import com.lms.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CourseService {
     private final CourseRepository courseRepository;
+    private final EnrollmentClient enrollmentClient;
 
     public List<CourseResponse> getAll() {
         return courseRepository.findAll().stream().map(this::toResponse).toList();
@@ -25,6 +29,7 @@ public class CourseService {
         return toResponse(course);
     }
 
+    @Transactional
     public CourseResponse create(CourseRequest request) {
         Course course = new Course();
         course.setTitle(request.title());
@@ -35,6 +40,7 @@ public class CourseService {
         return toResponse(saved);
     }
 
+    @Transactional
     public CourseResponse update(Long id, CourseRequest request) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Курс не найден!"));
@@ -46,10 +52,14 @@ public class CourseService {
         return toResponse(courseRepository.save(course));
     }
 
+    @Transactional
     public void delete(Long id) {
         Course course = courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Курс с id " + id + " не найден!"));
+
         courseRepository.delete(course);
+
+        enrollmentClient.deleteEnrollmentsByCourseId(id);
     }
 
     private CourseResponse toResponse(Course course) {

@@ -1,4 +1,4 @@
-package com.lms.dto;
+package com.lms.dto.course;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
