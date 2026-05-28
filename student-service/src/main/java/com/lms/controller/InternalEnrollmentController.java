@@ -19,10 +19,4 @@ public class InternalEnrollmentController {
     ) {
         return ResponseEntity.ok(enrollmentService.isStudentEnrolled(studentId, courseId));
     }
-
-    @DeleteMapping("/courses/{courseId}")
-    public ResponseEntity<Void> deleteEnrollmentByCourseId(@PathVariable("courseId") Long courseId) {
-        enrollmentService.cascadeDeleteEnrollments(courseId);
-        return ResponseEntity.noContent().build();
-    }
 }

@@ -4,8 +4,7 @@ import com.lms.common.exception.BaseException;
 import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.dto.student.StudentRequest;
 import com.lms.dto.student.StudentResponse;
-import com.lms.dto.internal.CreateStudentProfileRequest;
-import com.lms.model.Enrollment;
+import com.lms.dto.event.StudentRegistrationEvent;
 import com.lms.model.Student;
 import com.lms.repository.EnrollmentRepository;
 import com.lms.repository.StudentRepository;
@@ -13,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +29,7 @@ public class StudentService {
     }
 
     @Transactional
-    public void createProfile(CreateStudentProfileRequest request) {
+    public void createProfileFromEvent(StudentRegistrationEvent request) {
         if (studentRepository.existsById(request.id())) {
             throw new BaseException("Профиль студента с таким ID уже существует", HttpStatus.CONFLICT);
         }

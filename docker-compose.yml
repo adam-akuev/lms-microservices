@@ -16,6 +16,15 @@ services:
     networks:
       - lms-network
 
+  rabbitmq:
+    image: rabbitmq:3.7.4-management-alpine
+    container_name: lms-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - lms-network
+
 volumes:
   lms_db_data:
 

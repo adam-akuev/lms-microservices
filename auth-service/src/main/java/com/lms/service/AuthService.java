@@ -1,20 +1,19 @@
 package com.lms.service;
 
-import com.lms.client.StudentClient;
 import com.lms.common.exception.InvalidCredentialsException;
-import com.lms.common.exception.UserAlreadyExistsException;
+import com.lms.config.RabbitMQConfig;
 import com.lms.dto.LoginRequest;
 import com.lms.dto.RegisterRequest;
-import com.lms.dto.internal.CreateStudentProfileRequest;
+import com.lms.dto.event.StudentRegistrationEvent;
 import com.lms.model.Role;
 import com.lms.model.User;
 import com.lms.repository.UserRepository;
 import com.lms.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,20 +22,24 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final StudentClient studentClient;
     private final UserService userService;
+    private final RabbitTemplate rabbitTemplate;
 
     public void register(RegisterRequest request) {
         User user = userService.saveNewUser(request);
 
         if (request.role() == Role.ROLE_STUDENT) {
-            CreateStudentProfileRequest studentProfileRequest = new CreateStudentProfileRequest(
+            StudentRegistrationEvent event = new StudentRegistrationEvent(
                     user.getId(),
                     request.fullName(),
                     request.phoneNumber()
             );
 
-            studentClient.createProfile(studentProfileRequest);
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.LMS_EXCHANGE,
+                    RabbitMQConfig.REGISTRATION_ROUTING_KEY,
+                    event
+            );
         }
     }
 
