@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "student-service", contextId = "internalEnrollmentClient")
 public interface EnrollmentClient {
 
-    @DeleteMapping("/api/enrollments/internal/courses/{courseId}")
-    void deleteEnrollmentsByCourseId(@PathVariable("courseId") Long courseId);
-
     @GetMapping("/api/enrollments/internal/check")
     boolean checkEnrollment(
             @RequestParam("studentId") Long studentId,

@@ -7,6 +7,7 @@ import com.lms.dto.course.CourseResponse;
 import com.lms.model.Course;
 import com.lms.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final EnrollmentClient enrollmentClient;
+    private final RabbitTemplate rabbitTemplate;
 
     public List<CourseResponse> getAll() {
         return courseRepository.findAll().stream().map(this::toResponse).toList();
@@ -59,7 +61,11 @@ public class CourseService {
 
         courseRepository.delete(course);
 
-        enrollmentClient.deleteEnrollmentsByCourseId(id);
+        rabbitTemplate.convertAndSend(
+                "lms-exchange",
+                "course.deleted.key",
+                id
+        );
     }
 
     private CourseResponse toResponse(Course course) {
