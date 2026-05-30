@@ -6,7 +6,6 @@ import com.lms.dto.student.StudentRequest;
 import com.lms.dto.student.StudentResponse;
 import com.lms.dto.event.StudentRegistrationEvent;
 import com.lms.model.Student;
-import com.lms.repository.EnrollmentRepository;
 import com.lms.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class StudentService {
 
     private final StudentRepository studentRepository;
-    private final EnrollmentRepository enrollmentRepository;
 
     public StudentResponse getProfileById(Long id) {
         Student student = studentRepository.findById(id)
