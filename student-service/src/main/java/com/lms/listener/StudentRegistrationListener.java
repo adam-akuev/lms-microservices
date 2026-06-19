@@ -18,9 +18,9 @@ public class StudentRegistrationListener {
     private final StudentService studentService;
 
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = "user-registration-queue", durable = "true"),
+            value = @Queue(value = "student-registration-queue", durable = "true"),
             exchange = @Exchange(value = "lms-exchange", type = "topic"),
-            key = "user.registration.key"
+            key = "user.registration.student"
     ))
     public void handleStudentRegistration(StudentRegistrationEvent event) {
         log.info("Получено событие регистрации студента из RabbitMQ c ID: {}", event.id());

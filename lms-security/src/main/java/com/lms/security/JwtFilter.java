@@ -31,12 +31,12 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
 
         if (token != null && jwtProvider.validateToken(token)) {
-            String email = jwtProvider.getEmailFromToken(token);
+            Long userId = jwtProvider.getIdFromToken(token);
 
             List<SimpleGrantedAuthority> authorities = jwtProvider.getAuthoritiesFromToken(token);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    email, null, authorities
+                    userId, null, authorities
             );
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

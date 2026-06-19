@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
@@ -25,6 +27,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/students/internal/create").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/enrollments/internal/courses/{courseId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/check").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/student/{studentId}/courses").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

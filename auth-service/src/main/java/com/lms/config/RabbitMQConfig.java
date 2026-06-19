@@ -10,13 +10,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String REGISTRATION_QUEUE = "user-registration-queue";
+    public static final String STUDENT_QUEUE = "student-registration-queue";
+    public static final String TEACHER_QUEUE = "teacher-registration-queue";
+
     public static final String LMS_EXCHANGE = "lms-exchange";
-    public static final String REGISTRATION_ROUTING_KEY = "user.registration.key";
+
+    public static final String STUDENT_ROUTING_KEY = "user.registration.student";
+    public static final String TEACHER_ROUTING_KEY = "user.registration.teacher";
 
     @Bean
-    public Queue registrationQueue() {
-        return new Queue(REGISTRATION_QUEUE, true);
+    public Queue studentQueue() {
+        return new Queue(STUDENT_QUEUE, true);
+    }
+
+    @Bean
+    public Queue teacherQueue() {
+        return new Queue(TEACHER_QUEUE, true);
     }
 
     @Bean
@@ -25,8 +34,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding binding(Queue registrationQueue, TopicExchange lmsExchange) {
-        return BindingBuilder.bind(registrationQueue).to(lmsExchange).with(REGISTRATION_ROUTING_KEY);
+    public Binding studentBinding(Queue studentQueue, TopicExchange lmsExchange) {
+        return BindingBuilder.bind(studentQueue).to(lmsExchange).with(STUDENT_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding teacherBinding(Queue teacherQueue, TopicExchange lmsExchange) {
+        return BindingBuilder.bind(teacherQueue).to(lmsExchange).with(TEACHER_ROUTING_KEY);
     }
 
     @Bean

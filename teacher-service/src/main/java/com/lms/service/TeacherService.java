@@ -5,6 +5,7 @@ import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.dto.TeacherRequest;
 import com.lms.dto.TeacherResponse;
 import com.lms.dto.event.TeacherRegistrationEvent;
+import com.lms.dto.internal.TeacherResponseInternal;
 import com.lms.model.Teacher;
 import com.lms.repository.TeacherRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +33,12 @@ public class TeacherService {
         return teacherRepository.findAll(pageable).map(TeacherResponse::fromEntity);
     }
 
-    public List<TeacherResponse> getProfilesByIds(List<Long> ids) {
+    public List<TeacherResponseInternal> getProfilesByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
         return teacherRepository.findAllById(ids).stream()
-                .map(TeacherResponse::fromEntity)
+                .map(TeacherResponseInternal::fromEntity)
                 .toList();
     }
 
@@ -45,6 +46,12 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Профиль учителя не найден"));
         return TeacherResponse.fromEntity(teacher);
+    }
+
+    public TeacherResponseInternal getProfileByIdInternal(Long id) {
+        Teacher teacher = teacherRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Профиль учителя не найден"));
+        return TeacherResponseInternal.fromEntity(teacher);
     }
 
     @Transactional
@@ -67,8 +74,18 @@ public class TeacherService {
         Teacher teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Профиль учителя не найден"));
 
-        teacher.setFullName(request.fullName());
-        teacher.setPhone(request.phone());
+        if (request.fullName() != null) {
+            teacher.setFullName(request.fullName());
+        }
+
+        if (request.phone() != null) {
+            teacher.setPhone(request.phone());
+        }
+
+        if (request.birthDate() != null) {
+            teacher.setBirthDate(request.birthDate());
+        }
+
         if (request.bio() != null) {
             teacher.setBio(request.bio());
         }

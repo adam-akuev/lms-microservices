@@ -7,6 +7,8 @@ import com.lms.service.LessonService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,30 +22,34 @@ public class LessonController {
     private final JwtProvider jwtProvider;
 
     @GetMapping("/course/{courseId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<LessonResponse>> getAllLessonsOfCourse(
-            @RequestHeader("Authorization") String token,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long courseId
     ) {
-        Long studentId = jwtProvider.getIdFromToken(token.substring(7));
-        return ResponseEntity.ok(lessonService.getAllLessonsForStudentByCourseId(studentId, courseId));
+        return ResponseEntity.ok(lessonService.getAllLessonsForStudentByCourseId(userId, courseId));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<LessonResponse> getLessonById(@PathVariable Long id) {
         return ResponseEntity.ok(lessonService.getById(id));
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public ResponseEntity<LessonResponse> create(@RequestBody @Valid LessonRequest request) {
         return ResponseEntity.status(201).body(lessonService.create(request));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public ResponseEntity<LessonResponse> update(@PathVariable Long id, @RequestBody @Valid LessonRequest request) {
         return ResponseEntity.ok(lessonService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         lessonService.delete(id);
         return ResponseEntity.noContent().build();

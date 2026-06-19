@@ -9,6 +9,8 @@ import com.lms.model.Lesson;
 import com.lms.repository.CourseRepository;
 import com.lms.repository.LessonRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +27,26 @@ public class LessonService {
     private final EnrollmentClient enrollmentClient;
 
     public List<LessonResponse> getAllLessonsForStudentByCourseId(Long studentId, Long courseId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isTeacherOrAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_TEACHER") ||
+                                a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (isTeacherOrAdmin) {
+            return getAllLessonsByCourseId(courseId);
+        }
+
         boolean isEnrolled = enrollmentClient.checkEnrollment(studentId, courseId);
 
         if (!isEnrolled) {
             throw new AccessDeniedException("У вас нет доступа к урокам этого курса. Сначала запишитесь!");
         }
 
+        return getAllLessonsByCourseId(courseId);
+    }
+
+    private List<LessonResponse> getAllLessonsByCourseId(Long courseId) {
         List<Lesson> lessonsCourse = lessonRepository.findByCourseId(courseId);
 
         return lessonsCourse.stream().map(LessonResponse::fromEntity).toList();
