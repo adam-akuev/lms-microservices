@@ -3,7 +3,7 @@ name: Java CI with Maven
 # 1. Триггеры: когда запускать пайплайн
 on:
   push:
-    branches: [ "main", "master", "develop" ]
+    branches: [ "main", "master", "develop", "testing" ]
   pull_request:
     branches: [ "main", "master" ]
 
