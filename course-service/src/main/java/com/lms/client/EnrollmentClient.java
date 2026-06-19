@@ -1,0 +1,21 @@
+package com.lms.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@FeignClient(name = "student-service", contextId = "internalEnrollmentClient")
+public interface EnrollmentClient {
+
+    @GetMapping("/api/enrollments/internal/check")
+    boolean checkEnrollment(
+            @RequestParam("studentId") Long studentId,
+            @RequestParam("courseId") Long courseId
+    );
+
+    @GetMapping("/api/enrollments/internal/student/{studentId}/courses")
+    List<Long> getStudentCourseIds(@PathVariable("studentId") Long studentId);
+}

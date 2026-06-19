@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ErrorResponse> handleBaseException(BaseException e) {
         return buildResponse(e.getStatus(), e.getMessage());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+        return buildResponse(
+                HttpStatus.FORBIDDEN,
+                "Доступ запрещен! У вас недостаточно прав для выполнения этой операции."
+        );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -46,6 +55,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception e) {
+        e.printStackTrace();
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Произошла непредвиденная ошибка на сервере");
     }
 

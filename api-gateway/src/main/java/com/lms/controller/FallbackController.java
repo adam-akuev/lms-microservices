@@ -16,4 +16,11 @@ public class FallbackController {
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body("Сервис курсов временно недоступен. Пожалуйста, попробуйте позже.");
     }
+
+    @GetMapping("/student-service")
+    public ResponseEntity<String> studentServiceFallback() {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Сервис студентов временно недоступен. Пожалуйста, попробуйте позже.");
+    }
 }

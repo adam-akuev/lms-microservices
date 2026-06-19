@@ -27,6 +27,8 @@ public class Course {
 
     private BigDecimal price;
 
+    private Long teacherId;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lesson> lessons = new ArrayList<>();
 }
