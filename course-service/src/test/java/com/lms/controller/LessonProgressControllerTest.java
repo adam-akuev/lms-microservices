@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.dto.progress.CourseProgressResponse;
 import com.lms.security.SecurityConfig;
 import com.lms.security.JwtProvider;
 import com.lms.service.LessonProgressService;
@@ -60,24 +61,32 @@ class LessonProgressControllerTest {
     @WithMockUser(roles = "STUDENT")
     void getCourseProgress_Returns200_ForStudent() throws Exception {
         Long courseId = 20L;
-        // Заменяем anyLong() на any()
-        when(lessonProgressService.calculateCourseProgress(any(), eq(courseId))).thenReturn(75);
+        // 1. Создаем мок-объект нашего нового DTO ответа
+        CourseProgressResponse mockResponse = new CourseProgressResponse(75, java.util.List.of(1L, 2L), 2L);
 
+        // 2. Обучаем Mockito перехвату нового метода getCourseProgressDetails
+        when(lessonProgressService.getCourseProgressDetails(any(), eq(courseId))).thenReturn(mockResponse);
+
+        // 3. Выполняем запрос и проверяем поля внутри JSON
         mockMvc.perform(get("/api/progress/courses/{courseId}", courseId))
                 .andExpect(status().isOk())
-                .andExpect(content().string("75"));
+                .andExpect(jsonPath("$.progressPercent").value(75))
+                .andExpect(jsonPath("$.completedLessonIds[0]").value(1))
+                .andExpect(jsonPath("$.lastCompletedLessonId").value(2));
     }
 
     @Test
     @WithMockUser(roles = "ADMIN")
     void getCourseProgress_Returns200_ForAdmin() throws Exception {
         Long courseId = 20L;
-        // Заменяем anyLong() на any()
-        when(lessonProgressService.calculateCourseProgress(any(), eq(courseId))).thenReturn(100);
+        CourseProgressResponse mockResponse = new CourseProgressResponse(100, java.util.List.of(1L, 2L), 2L);
+
+        // Также заменяем старый вызов сервиса на getCourseProgressDetails
+        when(lessonProgressService.getCourseProgressDetails(any(), eq(courseId))).thenReturn(mockResponse);
 
         mockMvc.perform(get("/api/progress/courses/{courseId}", courseId))
                 .andExpect(status().isOk())
-                .andExpect(content().string("100"));
+                .andExpect(jsonPath("$.progressPercent").value(100));
     }
 
     @Test

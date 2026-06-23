@@ -31,4 +31,7 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lesson> lessons = new ArrayList<>();
+
+    private double averageRating = 0.0;
+    private int reviewCount = 0;
 }
