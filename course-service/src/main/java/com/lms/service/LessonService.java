@@ -4,6 +4,7 @@ import com.lms.client.EnrollmentClient;
 import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.dto.lesson.LessonRequest;
 import com.lms.dto.lesson.LessonResponse;
+import com.lms.mapper.LessonMapper;
 import com.lms.model.Course;
 import com.lms.model.Lesson;
 import com.lms.repository.CourseRepository;
@@ -23,8 +24,8 @@ import java.util.List;
 public class LessonService {
 
     private final LessonRepository lessonRepository;
-    private final CourseRepository courseRepository;
     private final EnrollmentClient enrollmentClient;
+    private final LessonMapper lessonMapper;
 
     public List<LessonResponse> getAllLessonsForStudentByCourseId(Long studentId, Long courseId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -49,29 +50,21 @@ public class LessonService {
     private List<LessonResponse> getAllLessonsByCourseId(Long courseId) {
         List<Lesson> lessonsCourse = lessonRepository.findByCourseId(courseId);
 
-        return lessonsCourse.stream().map(LessonResponse::fromEntity).toList();
+        return lessonsCourse.stream().map(lessonMapper::toResponse).toList();
     }
 
     public LessonResponse getById(Long id) {
         Lesson lesson = lessonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Урок с ID " + id + " не найден"));
 
-        return LessonResponse.fromEntity(lesson);
+        return lessonMapper.toResponse(lesson);
     }
 
     @Transactional
     public LessonResponse create(LessonRequest request) {
-        Course course = courseRepository.findById(request.courseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Курс с ID " + request.courseId() + " не найден"));
-
-        Lesson lesson = Lesson.builder()
-                .title(request.title())
-                .content(request.content())
-                .course(course)
-                .build();
-
+        Lesson lesson = lessonMapper.toEntity(request);
         Lesson savedLesson = lessonRepository.save(lesson);
-        return LessonResponse.fromEntity(savedLesson);
+        return lessonMapper.toResponse(savedLesson);
     }
 
     @Transactional
@@ -79,15 +72,10 @@ public class LessonService {
         Lesson lesson = lessonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Урок с ID " + id + " не найден"));
 
-        Course courseRequest = courseRepository.findById(request.courseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Курс с ID " + request.courseId() + " не найден"));
-
-        lesson.setTitle(request.title());
-        lesson.setContent(request.content());
-        lesson.setCourse(courseRequest);
+        lessonMapper.updateEntityFromDto(request, lesson);
 
         Lesson updatedLesson = lessonRepository.save(lesson);
-        return LessonResponse.fromEntity(updatedLesson);
+        return lessonMapper.toResponse(updatedLesson);
     }
 
     @Transactional
