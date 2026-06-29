@@ -8,15 +8,13 @@ import jakarta.persistence.EntityManager;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring")
 public abstract class LessonMapper {
 
-    private final EntityManager entityManager;
-
-    protected LessonMapper(EntityManager entityManager) {
-        this.entityManager = entityManager;
-    }
+    @Autowired
+    protected EntityManager entityManager;
 
     public abstract LessonResponse toResponse(Lesson lesson);
 

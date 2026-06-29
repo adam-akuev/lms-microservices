@@ -7,6 +7,7 @@ import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.dto.course.CourseRequest;
 import com.lms.dto.course.CourseResponse;
 import com.lms.dto.internal.teacher.TeacherResponseInternal;
+import com.lms.mapper.CourseMapper;
 import com.lms.model.Course;
 import com.lms.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,11 +28,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CourseService {
+
     private final CourseRepository courseRepository;
     private final RabbitTemplate rabbitTemplate;
     private final TeacherClient teacherClient;
     private final EnrollmentClient enrollmentClient;
     private final LessonProgressService lessonProgressService;
+    private final CourseMapper courseMapper;
 
     public List<CourseResponse> getAll() {
         List<Course> courses = courseRepository.findAll();
@@ -48,7 +51,7 @@ public class CourseService {
                 .collect(Collectors.toMap(TeacherResponseInternal::id, t -> t));
 
         return courses.stream()
-                .map(course -> toResponse(course, teacherMap.get(course.getTeacherId())))
+                .map(course -> courseMapper.toResponse(course, teacherMap.get(course.getTeacherId())))
                 .toList();
     }
 
@@ -66,7 +69,7 @@ public class CourseService {
 
         Integer progressPercentage = getProgressIfCurrentUserIsStudent(id);
 
-        return toResponse(course, teacher, progressPercentage);
+        return courseMapper.toResponse(course, teacher, progressPercentage);
     }
 
     public List<CourseResponse> getStudentCourses(Long studentId) {
@@ -90,7 +93,7 @@ public class CourseService {
         return courses.stream()
                 .map(course -> {
                     int progressPercentage = lessonProgressService.calculateCourseProgress(studentId, course.getId());
-                    return toResponse(course, teacherMap.get(course.getTeacherId()), progressPercentage);
+                    return courseMapper.toResponse(course, teacherMap.get(course.getTeacherId()), progressPercentage);
                 })
                 .toList();
     }
@@ -118,16 +121,12 @@ public class CourseService {
             throw new ResourceNotFoundException("Преподаватель с id " + targetTeacherId + " не найден!");
         }
 
-        Course course = new Course();
-        course.setTitle(request.title());
-        course.setDescription(request.description());
-        course.setPrice(request.price());
-        course.setTeacherId(targetTeacherId);
+        Course course = courseMapper.toEntity(request, targetTeacherId);
 
         Course saved = courseRepository.save(course);
         TeacherResponseInternal teacher = teacherClient.getProfileById(saved.getTeacherId());
 
-        return toResponse(saved, teacher);
+        return courseMapper.toResponse(saved, teacher);
     }
 
     @Transactional
@@ -143,14 +142,12 @@ public class CourseService {
             course.setTeacherId(request.teacherId());
         }
 
-        course.setTitle(request.title());
-        course.setDescription(request.description());
-        course.setPrice(request.price());
+        courseMapper.updateEntityFromDto(request, course);
 
         Course saved = courseRepository.save(course);
         TeacherResponseInternal teacher = teacherClient.getProfileById(saved.getTeacherId());
 
-        return toResponse(saved, teacher);
+        return courseMapper.toResponse(saved, teacher);
     }
 
     @Transactional
@@ -186,20 +183,5 @@ public class CourseService {
             }
         }
         return null;
-    }
-
-    private CourseResponse toResponse(Course course, TeacherResponseInternal teacher) {
-        return toResponse(course, teacher, null);
-    }
-
-    private CourseResponse toResponse(Course course, TeacherResponseInternal teacher, Integer progressPercentage) {
-        return new CourseResponse(
-                course.getId(),
-                course.getTitle(),
-                course.getDescription(),
-                course.getPrice(),
-                teacher,
-                progressPercentage
-        );
     }
 }

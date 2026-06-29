@@ -1,6 +1,6 @@
 package com.lms.mapper;
 
-import com.lms.dto.progress.CourseProgressResponse;
+import com.lms.dto.progress.LessonProgressResponse;
 import com.lms.model.LessonProgress;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -9,10 +9,10 @@ import java.util.Comparator;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
-public interface CourseProgressMapper {
+public interface LessonProgressMapper {
 
     @Mapping(target = "lastCompletedLessonId", expression = "java(findLastCompletedId(completedProgress))")
-    CourseProgressResponse toResponse(Integer progressPercent, List<LessonProgress> completedProgress);
+    LessonProgressResponse toResponse(Integer progressPercent, List<LessonProgress> completedProgress);
 
     default Long mapLessonProgressToLong(LessonProgress progress) {
         return progress != null ? progress.getLessonId() : null;
