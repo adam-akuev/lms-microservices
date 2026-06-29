@@ -1,6 +1,6 @@
 package com.lms.controller;
 
-import com.lms.dto.progress.CourseProgressResponse;
+import com.lms.dto.progress.LessonProgressResponse;
 import com.lms.security.SecurityConfig;
 import com.lms.security.JwtProvider;
 import com.lms.service.LessonProgressService;
@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -62,7 +61,7 @@ class LessonProgressControllerTest {
     void getCourseProgress_Returns200_ForStudent() throws Exception {
         Long courseId = 20L;
         // 1. Создаем мок-объект нашего нового DTO ответа
-        CourseProgressResponse mockResponse = new CourseProgressResponse(75, java.util.List.of(1L, 2L), 2L);
+        LessonProgressResponse mockResponse = new LessonProgressResponse(75, java.util.List.of(1L, 2L), 2L);
 
         // 2. Обучаем Mockito перехвату нового метода getCourseProgressDetails
         when(lessonProgressService.getCourseProgressDetails(any(), eq(courseId))).thenReturn(mockResponse);
@@ -79,7 +78,7 @@ class LessonProgressControllerTest {
     @WithMockUser(roles = "ADMIN")
     void getCourseProgress_Returns200_ForAdmin() throws Exception {
         Long courseId = 20L;
-        CourseProgressResponse mockResponse = new CourseProgressResponse(100, java.util.List.of(1L, 2L), 2L);
+        LessonProgressResponse mockResponse = new LessonProgressResponse(100, java.util.List.of(1L, 2L), 2L);
 
         // Также заменяем старый вызов сервиса на getCourseProgressDetails
         when(lessonProgressService.getCourseProgressDetails(any(), eq(courseId))).thenReturn(mockResponse);

@@ -3,6 +3,7 @@ package com.lms.service;
 import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.dto.review.ReviewRequestDto;
 import com.lms.dto.review.ReviewResponseDto;
+import com.lms.mapper.ReviewMapper;
 import com.lms.model.Course;
 import com.lms.model.Review;
 import com.lms.repository.CourseRepository;
@@ -21,9 +22,10 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final CourseRepository courseRepository;
+    private final ReviewMapper reviewMapper;
 
     public Page<ReviewResponseDto> findAll(Long courseId, Pageable pageable) {
-        return reviewRepository.findByCourseId(courseId, pageable).map(ReviewResponseDto::fromEntity);
+        return reviewRepository.findByCourseId(courseId, pageable).map(reviewMapper::toResponseDto);
     }
 
     @Transactional
@@ -32,12 +34,7 @@ public class ReviewService {
             throw new IllegalArgumentException("Вы уже оставили отзыв к этому курсу");
         }
 
-        Review review = new Review();
-        review.setStudentId(studentId);
-        review.setRating(reviewDto.rating());
-        review.setCourseId(courseId);
-        review.setText(reviewDto.text());
-
+        Review review = reviewMapper.toEntity(reviewDto, studentId, courseId);
         reviewRepository.save(review);
 
         ReviewStats ratingStats = reviewRepository.getRatingStatsByCourseId(courseId);
@@ -51,12 +48,6 @@ public class ReviewService {
         course.setReviewCount(reviewCount != null ? reviewCount.intValue() : 0);
         courseRepository.save(course);
 
-        return new ReviewResponseDto(
-                review.getId(),
-                review.getStudentId(),
-                review.getRating(),
-                review.getText(),
-                review.getCreatedAt()
-        );
+        return reviewMapper.toResponseDto(review);
     }
 }

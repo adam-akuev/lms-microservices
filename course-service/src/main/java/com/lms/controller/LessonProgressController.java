@@ -1,6 +1,6 @@
 package com.lms.controller;
 
-import com.lms.dto.progress.CourseProgressResponse;
+import com.lms.dto.progress.LessonProgressResponse;
 import com.lms.service.LessonProgressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,11 +27,11 @@ public class LessonProgressController {
 
     @GetMapping("/courses/{courseId}")
     @PreAuthorize("hasAnyRole('STUDENT', 'ADMIN')")
-    public ResponseEntity<CourseProgressResponse> getCourseProgress(
+    public ResponseEntity<LessonProgressResponse> getCourseProgress(
             @AuthenticationPrincipal Long studentId,
             @PathVariable Long courseId
     ) {
-        CourseProgressResponse progress = lessonProgressService.getCourseProgressDetails(studentId, courseId);
+        LessonProgressResponse progress = lessonProgressService.getCourseProgressDetails(studentId, courseId);
         return ResponseEntity.ok(progress);
     }
 

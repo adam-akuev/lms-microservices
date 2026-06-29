@@ -4,6 +4,7 @@ import com.lms.client.EnrollmentClient;
 import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.dto.lesson.LessonRequest;
 import com.lms.dto.lesson.LessonResponse;
+import com.lms.mapper.LessonMapper;
 import com.lms.model.Course;
 import com.lms.model.Lesson;
 import com.lms.repository.CourseRepository;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -33,6 +35,7 @@ class LessonServiceTest {
     @Mock private LessonRepository lessonRepository;
     @Mock private CourseRepository courseRepository;
     @Mock private EnrollmentClient enrollmentClient;
+    @Mock private LessonMapper lessonMapper;
 
     @InjectMocks
     private LessonService lessonService;
@@ -46,10 +49,10 @@ class LessonServiceTest {
         SecurityContext securityContext = mock(SecurityContext.class);
         Authentication authentication = mock(Authentication.class);
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-        
+
         lenient().doReturn(authorities).when(authentication).getAuthorities();
         lenient().when(securityContext.getAuthentication()).thenReturn(authentication);
-        
+
         SecurityContextHolder.setContext(securityContext);
     }
 
@@ -62,8 +65,12 @@ class LessonServiceTest {
         Long studentId = 1L;
         mockAuthentication("ROLE_TEACHER");
 
-        Lesson lesson = Lesson.builder().id(100L).title("Введение").build();
+        Lesson lesson = Lesson.builder().id(100L).title("Введение").content("Контент урока").build();
         when(lessonRepository.findByCourseId(courseId)).thenReturn(List.of(lesson));
+
+        // Мокаем маппер
+        LessonResponse expectedResponse = new LessonResponse(100L, "Введение", "Контент урока");
+        when(lessonMapper.toResponse(lesson)).thenReturn(expectedResponse);
 
         // Act
         List<LessonResponse> result = lessonService.getAllLessonsForStudentByCourseId(studentId, courseId);
@@ -71,9 +78,12 @@ class LessonServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(100L, result.get(0).id());
         assertEquals("Введение", result.get(0).title());
-        // Проверяем, что к Feign-клиенту подписок даже не обращались, так как это учитель
-        verifyNoInteractions(enrollmentClient); 
+        assertEquals("Контент урока", result.get(0).content());
+
+        verifyNoInteractions(enrollmentClient);
+        verify(lessonMapper, times(1)).toResponse(lesson);
     }
 
     @Test
@@ -85,8 +95,12 @@ class LessonServiceTest {
 
         when(enrollmentClient.checkEnrollment(studentId, courseId)).thenReturn(true);
 
-        Lesson lesson = Lesson.builder().id(100L).title("Введение").build();
+        Lesson lesson = Lesson.builder().id(100L).title("Введение").content("Контент урока").build();
         when(lessonRepository.findByCourseId(courseId)).thenReturn(List.of(lesson));
+
+        // Мокаем маппер
+        LessonResponse expectedResponse = new LessonResponse(100L, "Введение", "Контент урока");
+        when(lessonMapper.toResponse(lesson)).thenReturn(expectedResponse);
 
         // Act
         List<LessonResponse> result = lessonService.getAllLessonsForStudentByCourseId(studentId, courseId);
@@ -94,7 +108,10 @@ class LessonServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals("Введение", result.get(0).title());
+
         verify(enrollmentClient, times(1)).checkEnrollment(studentId, courseId);
+        verify(lessonMapper, times(1)).toResponse(lesson);
     }
 
     @Test
@@ -104,7 +121,6 @@ class LessonServiceTest {
         Long studentId = 1L;
         mockAuthentication("ROLE_STUDENT");
 
-        // Симулируем, что студент НЕ записан на курс
         when(enrollmentClient.checkEnrollment(studentId, courseId)).thenReturn(false);
 
         // Act & Assert
@@ -112,8 +128,51 @@ class LessonServiceTest {
             lessonService.getAllLessonsForStudentByCourseId(studentId, courseId);
         });
 
-        // Уроки не должны запрашиваться из базы данных при отсутствии доступа
         verifyNoInteractions(lessonRepository);
+        verifyNoInteractions(lessonMapper);
+    }
+
+    // --- Тесты для метода getById ---
+
+    @Test
+    void getById_Success() {
+        // Arrange
+        Long lessonId = 100L;
+        Lesson lesson = Lesson.builder()
+                .id(lessonId)
+                .title("Урок 1")
+                .content("Содержание урока")
+                .build();
+
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+
+        LessonResponse expectedResponse = new LessonResponse(lessonId, "Урок 1", "Содержание урока");
+        when(lessonMapper.toResponse(lesson)).thenReturn(expectedResponse);
+
+        // Act
+        LessonResponse response = lessonService.getById(lessonId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(lessonId, response.id());
+        assertEquals("Урок 1", response.title());
+        assertEquals("Содержание урока", response.content());
+
+        verify(lessonMapper).toResponse(lesson);
+    }
+
+    @Test
+    void getById_ThrowsResourceNotFoundException() {
+        // Arrange
+        Long lessonId = 999L;
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            lessonService.getById(lessonId);
+        });
+
+        verifyNoInteractions(lessonMapper);
     }
 
     // --- Тесты для метода create ---
@@ -123,18 +182,24 @@ class LessonServiceTest {
         // Arrange
         Long courseId = 10L;
         LessonRequest request = new LessonRequest("Новый урок", "Контент", courseId);
-        Course course = new Course();
-        course.setId(courseId);
 
-        when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        
+        // Создаем сущность, которую вернет маппер
+        Lesson lessonEntity = new Lesson();
+        lessonEntity.setTitle(request.title());
+        lessonEntity.setContent(request.content());
+
         Lesson savedLesson = Lesson.builder()
                 .id(500L)
                 .title(request.title())
                 .content(request.content())
-                .course(course)
                 .build();
-        when(lessonRepository.save(any(Lesson.class))).thenReturn(savedLesson);
+
+        // Мокаем маппер и репозиторий
+        when(lessonMapper.toEntity(request)).thenReturn(lessonEntity);
+        when(lessonRepository.save(lessonEntity)).thenReturn(savedLesson);
+
+        LessonResponse expectedResponse = new LessonResponse(500L, "Новый урок", "Контент");
+        when(lessonMapper.toResponse(savedLesson)).thenReturn(expectedResponse);
 
         // Act
         LessonResponse response = lessonService.create(request);
@@ -143,22 +208,101 @@ class LessonServiceTest {
         assertNotNull(response);
         assertEquals(500L, response.id());
         assertEquals("Новый урок", response.title());
-        verify(lessonRepository, times(1)).save(any(Lesson.class));
+        assertEquals("Контент", response.content());
+
+        verify(lessonMapper).toEntity(request);
+        verify(lessonRepository).save(lessonEntity);
+        verify(lessonMapper).toResponse(savedLesson);
+    }
+
+    // --- Тесты для метода update ---
+
+    @Test
+    void update_Success() {
+        // Arrange
+        Long lessonId = 100L;
+        Long courseId = 10L;
+        LessonRequest request = new LessonRequest("Обновленный урок", "Новый контент", courseId);
+
+        Lesson existingLesson = Lesson.builder()
+                .id(lessonId)
+                .title("Старый заголовок")
+                .content("Старый контент")
+                .build();
+
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(existingLesson));
+
+        Lesson updatedLesson = Lesson.builder()
+                .id(lessonId)
+                .title("Обновленный урок")
+                .content("Новый контент")
+                .build();
+
+        when(lessonRepository.save(existingLesson)).thenReturn(updatedLesson);
+
+        LessonResponse expectedResponse = new LessonResponse(lessonId, "Обновленный урок", "Новый контент");
+        when(lessonMapper.toResponse(updatedLesson)).thenReturn(expectedResponse);
+
+        // Act
+        LessonResponse response = lessonService.update(lessonId, request);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(lessonId, response.id());
+        assertEquals("Обновленный урок", response.title());
+        assertEquals("Новый контент", response.content());
+
+        verify(lessonMapper).updateEntityFromDto(request, existingLesson);
+        verify(lessonRepository).save(existingLesson);
+        verify(lessonMapper).toResponse(updatedLesson);
     }
 
     @Test
-    void create_ThrowsResourceNotFoundException_WhenCourseNotExists() {
+    void update_ThrowsResourceNotFoundException() {
         // Arrange
-        Long courseId = 10L;
-        LessonRequest request = new LessonRequest("Урок", "Контент", courseId);
+        Long lessonId = 999L;
+        LessonRequest request = new LessonRequest("Урок", "Контент", 10L);
 
-        when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> {
-            lessonService.create(request);
+            lessonService.update(lessonId, request);
         });
 
-        verifyNoInteractions(lessonRepository);
+        verifyNoInteractions(lessonMapper);
+        verify(lessonRepository, never()).save(any());
+    }
+
+    // --- Тесты для метода delete ---
+
+    @Test
+    void delete_Success() {
+        // Arrange
+        Long lessonId = 100L;
+        Lesson lesson = Lesson.builder().id(lessonId).title("Урок").build();
+
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.of(lesson));
+
+        // Act
+        lessonService.delete(lessonId);
+
+        // Assert
+        verify(lessonRepository).delete(lesson);
+    }
+
+    @Test
+    void delete_ThrowsResourceNotFoundException() {
+        // Arrange
+        Long lessonId = 999L;
+
+        when(lessonRepository.findById(lessonId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> {
+            lessonService.delete(lessonId);
+        });
+
+        verify(lessonRepository, never()).delete(any());
     }
 }

@@ -10,14 +10,4 @@ public record ReviewResponseDto(
         int rating,
         String text,
         LocalDateTime createdAt
-) {
-    public static ReviewResponseDto fromEntity(Review review) {
-        return new ReviewResponseDto(
-                review.getId(),
-                review.getStudentId(),
-                review.getRating(),
-                review.getText(),
-                review.getCreatedAt()
-        );
-    }
-}
+) {}
