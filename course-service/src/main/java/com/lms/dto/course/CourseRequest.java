@@ -16,5 +16,7 @@ public record CourseRequest(
         @Positive(message = "Цена должна быть положительной")
         BigDecimal price,
 
-        Long teacherId
+        Long teacherId,
+
+        Long categoryId
 ) {}

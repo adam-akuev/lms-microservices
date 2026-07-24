@@ -8,10 +8,16 @@ import com.lms.dto.course.CourseRequest;
 import com.lms.dto.course.CourseResponse;
 import com.lms.dto.internal.teacher.TeacherResponseInternal;
 import com.lms.mapper.CourseMapper;
+import com.lms.model.Category;
 import com.lms.model.Course;
+import com.lms.repository.CategoryRepository;
 import com.lms.repository.CourseRepository;
+import com.lms.repository.CourseSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,6 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -31,6 +38,7 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final CategoryRepository categoryRepository;
     private final TeacherClient teacherClient;
     private final EnrollmentClient enrollmentClient;
     private final LessonProgressService lessonProgressService;
@@ -123,6 +131,12 @@ public class CourseService {
 
         Course course = courseMapper.toEntity(request, targetTeacherId);
 
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Категория с id " + request.categoryId() + " не найдена!"));
+            course.setCategory(category);
+        }
+
         Course saved = courseRepository.save(course);
         TeacherResponseInternal teacher = teacherClient.getProfileById(saved.getTeacherId());
 
@@ -144,6 +158,14 @@ public class CourseService {
 
         courseMapper.updateEntityFromDto(request, course);
 
+        if (request.categoryId() != null) {
+            Category category = categoryRepository.findById(request.categoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Категория с id " + request.categoryId() + " не найдена!"));
+            course.setCategory(category);
+        } else {
+            course.setCategory(null);
+        }
+
         Course saved = courseRepository.save(course);
         TeacherResponseInternal teacher = teacherClient.getProfileById(saved.getTeacherId());
 
@@ -162,6 +184,30 @@ public class CourseService {
                 "course.deleted.key",
                 id
         );
+    }
+
+    public Page<CourseResponse> searchCourses(String query, Long categoryId, Pageable pageable) {
+        Specification<Course> specification = Specification
+                .where(CourseSpecification.hasSearchQuery(query))
+                .and(CourseSpecification.hasCategoryId(categoryId));
+
+        Page<Course> coursesPage = courseRepository.findAll(specification, pageable);
+
+        if (coursesPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> teacherIds = coursesPage.getContent().stream()
+                .map(Course::getTeacherId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<Long, TeacherResponseInternal> teacherMap = teacherIds.isEmpty() ? Collections.emptyMap() :
+                teacherClient.getProfilesByIds(teacherIds).stream()
+                        .collect(Collectors.toMap(TeacherResponseInternal::id, t -> t));
+
+        return coursesPage.map(course -> courseMapper.toResponse(course, teacherMap.get(course.getTeacherId())));
     }
 
     private Integer getProgressIfCurrentUserIsStudent(Long courseId) {

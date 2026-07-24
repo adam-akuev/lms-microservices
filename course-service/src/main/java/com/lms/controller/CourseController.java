@@ -5,6 +5,10 @@ import com.lms.dto.course.CourseResponse;
 import com.lms.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,8 +24,12 @@ public class CourseController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<CourseResponse>> getAllCourses() {
-        return ResponseEntity.ok(courseService.getAll());
+    public ResponseEntity<Page<CourseResponse>> getCourses(
+            @RequestParam(name = "query", required = false) String query,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(courseService.searchCourses(query, categoryId, pageable));
     }
 
     @GetMapping("/{id}")

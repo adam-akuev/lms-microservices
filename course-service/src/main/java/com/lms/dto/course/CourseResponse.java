@@ -1,5 +1,6 @@
 package com.lms.dto.course;
 
+import com.lms.dto.category.CategoryResponse;
 import com.lms.dto.internal.teacher.TeacherResponseInternal;
 
 import java.math.BigDecimal;
@@ -10,5 +11,6 @@ public record CourseResponse(
         String description,
         BigDecimal price,
         TeacherResponseInternal teacher,
+        CategoryResponse category,
         Integer progressPercentage
 ) {}
