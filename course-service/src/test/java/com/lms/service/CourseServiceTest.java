@@ -91,6 +91,7 @@ class CourseServiceTest {
                 "Advanced Java course",
                 BigDecimal.valueOf(100),
                 teacherMock,
+                null,
                 75
         );
         when(courseMapper.toResponse(any(Course.class), any(TeacherResponseInternal.class), anyInt()))
@@ -130,7 +131,7 @@ class CourseServiceTest {
         Long currentUserId = 5L;
         mockAuthentication("ROLE_TEACHER", currentUserId);
 
-        CourseRequest request = new CourseRequest("Spring Boot 3", "Desc", BigDecimal.TEN, null);
+        CourseRequest request = new CourseRequest("Spring Boot 3", "Desc", BigDecimal.TEN, null,null);
 
         when(teacherClient.existsById(currentUserId)).thenReturn(true);
 
@@ -162,6 +163,7 @@ class CourseServiceTest {
                 "Desc",
                 BigDecimal.TEN,
                 teacherMock,
+                null,
                 0
         );
         when(courseMapper.toResponse(any(Course.class), any(TeacherResponseInternal.class)))
@@ -190,7 +192,7 @@ class CourseServiceTest {
         // Arrange
         Long adminId = 1L;
         mockAuthentication("ROLE_ADMIN", adminId);
-        CourseRequest request = new CourseRequest("New Course", "Desc", BigDecimal.TEN, null);
+        CourseRequest request = new CourseRequest("New Course", "Desc", BigDecimal.TEN, null, null);
 
         // Act & Assert
         BaseException exception = assertThrows(BaseException.class, () -> {

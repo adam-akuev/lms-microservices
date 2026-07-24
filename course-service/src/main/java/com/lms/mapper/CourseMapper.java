@@ -8,7 +8,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {CategoryMapper.class})
 public interface CourseMapper {
 
     @Mapping(target = "id", source = "course.id")
@@ -16,6 +16,7 @@ public interface CourseMapper {
     @Mapping(target = "description", source = "course.description")
     @Mapping(target = "price", source = "course.price")
     @Mapping(target = "teacher", source = "teacher")
+    @Mapping(target = "category", source = "course.category")
     @Mapping(target = "progressPercentage", source = "progressPercentage")
     CourseResponse toResponse(Course course, TeacherResponseInternal teacher, Integer progressPercentage);
 
@@ -28,6 +29,7 @@ public interface CourseMapper {
     @Mapping(target = "averageRating", ignore = true)
     @Mapping(target = "reviewCount", ignore = true)
     @Mapping(target = "teacherId", source = "targetTeacherId")
+    @Mapping(target = "category", ignore = true)
     Course toEntity(CourseRequest request, Long targetTeacherId);
 
     @Mapping(target = "id", ignore = true)
@@ -35,5 +37,6 @@ public interface CourseMapper {
     @Mapping(target = "averageRating", ignore = true)
     @Mapping(target = "reviewCount", ignore = true)
     @Mapping(target = "teacherId", ignore = true)
+    @Mapping(target = "category", ignore = true)
     void updateEntityFromDto(CourseRequest request, @MappingTarget Course course);
 }

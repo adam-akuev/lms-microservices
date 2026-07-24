@@ -49,7 +49,7 @@ class CourseControllerTest {
     @Test
     @WithMockUser(roles = "STUDENT") // Симулируем студента
     void getMyCourses_Returns200_ForStudent() throws Exception {
-        CourseResponse courseMock = new CourseResponse(1L, "Java", "Desc", BigDecimal.TEN, null, 0);
+        CourseResponse courseMock = new CourseResponse(1L, "Java", "Desc", BigDecimal.TEN, null, null, 0);
         when(courseService.getStudentCourses(any())).thenReturn(List.of(courseMock));
 
         mockMvc.perform(get("/api/courses/my-courses"))
@@ -72,9 +72,9 @@ class CourseControllerTest {
     @WithMockUser(roles = "TEACHER")
     void create_Returns201_WhenValid() throws Exception {
         // Arrange
-        CourseRequest request = new CourseRequest("Spring Boot", "Описание", BigDecimal.valueOf(100), 5L);
+        CourseRequest request = new CourseRequest("Spring Boot", "Описание", BigDecimal.valueOf(100), 5L, null);
         TeacherResponseInternal teacher = new TeacherResponseInternal(5L, "Имя", null, null);
-        CourseResponse expectedResponse = new CourseResponse(10L, "Spring Boot", "Описание", BigDecimal.valueOf(100), teacher, null);
+        CourseResponse expectedResponse = new CourseResponse(10L, "Spring Boot", "Описание", BigDecimal.valueOf(100), teacher, null, null);
 
         when(courseService.create(any(CourseRequest.class), any())).thenReturn(expectedResponse);
 
@@ -93,8 +93,8 @@ class CourseControllerTest {
     @WithMockUser(roles = "TEACHER")
     void update_Returns200() throws Exception {
         Long courseId = 1L;
-        CourseRequest request = new CourseRequest("Updated Title", "Desc", BigDecimal.TEN, 5L);
-        CourseResponse expectedResponse = new CourseResponse(courseId, "Updated Title", "Desc", BigDecimal.TEN, null, null);
+        CourseRequest request = new CourseRequest("Updated Title", "Desc", BigDecimal.TEN, 5L, null);
+        CourseResponse expectedResponse = new CourseResponse(courseId, "Updated Title", "Desc", BigDecimal.TEN, null, null, null);
 
         when(courseService.update(eq(courseId), any(CourseRequest.class))).thenReturn(expectedResponse);
 

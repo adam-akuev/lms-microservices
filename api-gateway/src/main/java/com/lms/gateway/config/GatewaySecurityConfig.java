@@ -21,7 +21,14 @@ public class GatewaySecurityConfig {
 
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
-                    config.addAllowedOrigin("http://localhost:5173");
+
+                    config.addAllowedOriginPattern("http://localhost:*");
+                    config.addAllowedOriginPattern("http://127.0.0.1:*");
+                    config.addAllowedOriginPattern("http://192.168.*:*");
+                    config.addAllowedOriginPattern("http://172.20.*:*");
+                    config.addAllowedOriginPattern("http://10.*:*");
+
+
                     config.addAllowedMethod("*");
                     config.addAllowedHeader("*");
                     config.setAllowCredentials(true);
