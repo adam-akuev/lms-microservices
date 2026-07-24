@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.ReviewApi;
 import com.lms.dto.review.ReviewRequestDto;
 import com.lms.dto.review.ReviewResponseDto;
 import com.lms.service.ReviewService;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/review")
 @RequiredArgsConstructor
-public class ReviewController {
+public class ReviewController implements ReviewApi {
 
     private final ReviewService reviewService;
 

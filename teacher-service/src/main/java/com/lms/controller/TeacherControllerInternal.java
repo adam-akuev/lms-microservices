@@ -3,6 +3,7 @@ package com.lms.controller;
 import com.lms.dto.TeacherResponse;
 import com.lms.dto.internal.TeacherResponseInternal;
 import com.lms.service.TeacherService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/teachers/internal")
 @RequiredArgsConstructor
+@Hidden
 public class TeacherControllerInternal {
 
     private final TeacherService teacherService;

@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.CategoryApi;
 import com.lms.dto.category.CategoryRequest;
 import com.lms.dto.category.CategoryResponse;
 import com.lms.service.CategoryService;
@@ -15,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
-public class CategoryController {
+public class CategoryController implements CategoryApi {
 
     private final CategoryService categoryService;
 

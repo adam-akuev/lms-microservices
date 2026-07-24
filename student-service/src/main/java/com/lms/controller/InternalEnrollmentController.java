@@ -1,6 +1,7 @@
 package com.lms.controller;
 
 import com.lms.service.EnrollmentService;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,6 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/enrollments/internal")
 @RequiredArgsConstructor
+@Hidden
 public class InternalEnrollmentController {
 
     private final EnrollmentService enrollmentService;
