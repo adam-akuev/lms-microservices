@@ -27,6 +27,15 @@ public class Course {
 
     private BigDecimal price;
 
+    private Long teacherId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Lesson> lessons = new ArrayList<>();
+
+    private double averageRating = 0.0;
+    private int reviewCount = 0;
 }

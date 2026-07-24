@@ -5,6 +5,7 @@ import com.lms.config.RabbitMQConfig;
 import com.lms.dto.LoginRequest;
 import com.lms.dto.RegisterRequest;
 import com.lms.dto.event.StudentRegistrationEvent;
+import com.lms.dto.event.TeacherRegistrationEvent;
 import com.lms.model.Role;
 import com.lms.model.User;
 import com.lms.repository.UserRepository;
@@ -37,7 +38,21 @@ public class AuthService {
 
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.LMS_EXCHANGE,
-                    RabbitMQConfig.REGISTRATION_ROUTING_KEY,
+                    RabbitMQConfig.STUDENT_ROUTING_KEY,
+                    event
+            );
+        }
+
+        if (request.role() == Role.ROLE_TEACHER) {
+            TeacherRegistrationEvent event = new TeacherRegistrationEvent(
+                    user.getId(),
+                    request.fullName(),
+                    request.phoneNumber()
+            );
+
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.LMS_EXCHANGE,
+                    RabbitMQConfig.TEACHER_ROUTING_KEY,
                     event
             );
         }

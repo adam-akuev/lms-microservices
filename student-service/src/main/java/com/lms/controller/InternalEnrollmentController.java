@@ -2,8 +2,9 @@ package com.lms.controller;
 
 import com.lms.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/enrollments/internal")
@@ -13,10 +14,15 @@ public class InternalEnrollmentController {
     private final EnrollmentService enrollmentService;
 
     @GetMapping("/check")
-    public ResponseEntity<Boolean> checkEnrollment(
+    public boolean checkEnrollment(
             @RequestParam Long studentId,
             @RequestParam Long courseId
     ) {
-        return ResponseEntity.ok(enrollmentService.isStudentEnrolled(studentId, courseId));
+        return enrollmentService.isStudentEnrolled(studentId, courseId);
+    }
+
+    @GetMapping("/student/{studentId}/courses")
+    public List<Long> getStudentCourseIds(@PathVariable Long studentId) {
+        return enrollmentService.getStudentCourseIds(studentId);
     }
 }

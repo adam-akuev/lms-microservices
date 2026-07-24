@@ -44,9 +44,12 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 }
 
                 String email = jwtProvider.getEmailFromToken(token);
+                Long id = jwtProvider.getIdFromToken(token);
                 request = request.mutate()
                         .headers(httpHeaders -> httpHeaders.remove("X-User-Email"))
+                        .headers(httpHeaders -> httpHeaders.remove("X-User-Id"))
                         .header("X-User-Email", email)
+                        .header("X-User-Id", String.valueOf(id))
                         .build();
             } catch (Exception e) {
                 return onError(exchange, "JWT Validation Failed", HttpStatus.UNAUTHORIZED);

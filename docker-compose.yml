@@ -1,6 +1,114 @@
 version: '3.8'
 
 services:
+  discovery-server:
+    build:
+      context: .
+      dockerfile: discovery-server/Dockerfile
+    image: discovery-server:latest
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    networks:
+      - lms-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8761/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    image: auth-service:latest
+    container_name: auth-service
+    ports:
+      - "8082:8082"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - SPRING_RABBITMQ_HOST=lms-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
+  course-service:
+    build:
+      context: .
+      dockerfile: course-service/Dockerfile
+    image: course-service:latest
+    container_name: course-service
+    ports:
+      - "8081:8081"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
+  student-service:
+    build:
+      context: .
+      dockerfile: student-service/Dockerfile
+    image: student-service:latest
+    container_name: student-service
+    ports:
+      - "8083:8083"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - SPRING_RABBITMQ_HOST=lms-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
+  teacher-service:
+    build:
+      context: .
+      dockerfile: teacher-service/Dockerfile
+    image: teacher-service:latest
+    container_name: teacher-service
+    ports:
+      - "8084:8084"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - SPRING_RABBITMQ_HOST=lms-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
   lms-db:
     image: postgres:17-alpine
     container_name: lms-postgres
