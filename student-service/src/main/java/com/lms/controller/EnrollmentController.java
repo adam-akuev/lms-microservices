@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.EnrollmentApi;
 import com.lms.dto.enrollment.EnrollmentRequest;
 import com.lms.dto.enrollment.EnrollmentResponse;
 import com.lms.security.JwtProvider;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/enrollments")
 @RequiredArgsConstructor
-public class EnrollmentController {
+public class EnrollmentController implements EnrollmentApi {
 
     private final EnrollmentService enrollmentService;
 

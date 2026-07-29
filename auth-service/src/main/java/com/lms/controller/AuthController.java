@@ -1,8 +1,10 @@
 package com.lms.controller;
 
+import com.lms.controller.api.AuthApi;
 import com.lms.dto.LoginRequest;
 import com.lms.dto.RegisterRequest;
 import com.lms.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthController implements AuthApi {
 
     private final AuthService authService;
 

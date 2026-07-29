@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.CourseApi;
 import com.lms.dto.course.CourseRequest;
 import com.lms.dto.course.CourseResponse;
 import com.lms.service.CourseService;
@@ -19,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
-public class CourseController {
+public class CourseController implements CourseApi {
     private final CourseService courseService;
 
     @GetMapping

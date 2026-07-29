@@ -28,6 +28,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/enrollments/internal/courses/{courseId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/check").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/student/{studentId}/courses").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

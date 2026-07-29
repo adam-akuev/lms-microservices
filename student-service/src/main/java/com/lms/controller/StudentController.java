@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.StudentApi;
 import com.lms.dto.student.StudentRequest;
 import com.lms.dto.student.StudentResponse;
 import com.lms.service.StudentService;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/students")
 @RequiredArgsConstructor
-public class StudentController {
+public class StudentController implements StudentApi {
 
     private final StudentService studentService;
 
