@@ -37,8 +37,14 @@ public class GatewaySecurityConfig {
 
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .pathMatchers("/api/*/internal/**").denyAll()
                         .pathMatchers("/api/auth/**").permitAll()
+                        .pathMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        .pathMatchers("/api/*/internal/**").denyAll()
                         .anyExchange().permitAll()
                 );
 

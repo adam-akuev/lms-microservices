@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.TeacherApi;
 import com.lms.dto.TeacherRequest;
 import com.lms.dto.TeacherResponse;
 import com.lms.security.JwtProvider;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/teachers")
 @RequiredArgsConstructor
-public class TeacherController {
+public class TeacherController implements TeacherApi {
 
     private final TeacherService teacherService;
 

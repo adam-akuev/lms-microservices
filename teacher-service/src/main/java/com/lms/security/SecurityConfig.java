@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
@@ -26,7 +26,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint((request, response, authException) -> {
-                            // Если пользователь не аутентифицирован — строго возвращаем 401
                             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                         })
                 )
@@ -34,6 +33,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/teachers/internal/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teachers/internal/bulk").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/teachers/internal/{id}/exists").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

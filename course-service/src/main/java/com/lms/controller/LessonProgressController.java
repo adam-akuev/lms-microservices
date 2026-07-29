@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.LessonProgressApi;
 import com.lms.dto.progress.LessonProgressResponse;
 import com.lms.service.LessonProgressService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/progress")
 @RequiredArgsConstructor
-public class LessonProgressController {
+public class LessonProgressController implements LessonProgressApi {
 
     private final LessonProgressService lessonProgressService;
 

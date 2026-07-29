@@ -14,7 +14,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, proxyTargetClass = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtFilter jwtFilter;
@@ -28,6 +28,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/enrollments/internal/courses/{courseId}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/check").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/enrollments/internal/student/{studentId}/courses").permitAll()
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

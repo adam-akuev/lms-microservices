@@ -29,9 +29,18 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       discovery-server:
         condition: service_healthy
+    networks:
+      - lms-network
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: lms-zipkin
+    ports:
+      - "9411:9411"
     networks:
       - lms-network
 
@@ -46,6 +55,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       - SPRING_RABBITMQ_HOST=lms-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
     depends_on:
@@ -65,6 +75,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -82,6 +93,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       - SPRING_RABBITMQ_HOST=lms-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
     depends_on:
@@ -101,6 +113,7 @@ services:
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       - SPRING_RABBITMQ_HOST=lms-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
     depends_on:

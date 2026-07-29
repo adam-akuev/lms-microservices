@@ -1,5 +1,6 @@
 package com.lms.controller;
 
+import com.lms.controller.api.LessonApi;
 import com.lms.dto.lesson.LessonRequest;
 import com.lms.dto.lesson.LessonResponse;
 import com.lms.security.JwtProvider;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/lessons")
 @RequiredArgsConstructor
-public class LessonController {
+public class LessonController implements LessonApi {
 
     private final LessonService lessonService;
     private final JwtProvider jwtProvider;
