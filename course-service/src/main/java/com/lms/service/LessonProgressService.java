@@ -65,4 +65,8 @@ public class LessonProgressService {
 
         return courseProgressMapper.toResponse(progressPercent, completedProgress);
     }
+
+    public boolean isAllLessonsCompleted(Long studentId, Long courseId) {
+        return calculateCourseProgress(studentId, courseId) == 100;
+    }
 }
