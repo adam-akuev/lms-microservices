@@ -1,5 +1,7 @@
 package com.lms.service;
 
+import com.lms.config.RabbitMQConfig;
+import com.lms.dto.event.QuizPassedEvent;
 import com.lms.dto.quiz.*;
 import com.lms.model.quiz.Quiz;
 import com.lms.model.quiz.QuizOption;
@@ -8,13 +10,17 @@ import com.lms.model.quiz.UserQuizAttempt;
 import com.lms.repository.QuizRepository;
 import com.lms.repository.UserQuizAttemptRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -23,6 +29,7 @@ public class QuizService {
     private final QuizRepository quizRepository;
     private final UserQuizAttemptRepository attemptRepository;
     private final LessonProgressService progressService;
+    private final RabbitTemplate rabbitTemplate;
 
     private Quiz loadQuizWithDetails(Long courseId) {
         Quiz quiz = quizRepository.findByCourseIdWithQuestions(courseId)
@@ -89,11 +96,27 @@ public class QuizService {
                 .build();
         attemptRepository.save(attempt);
 
+        if (isPassed) {
+            publishQuizPassedEvent(userId, courseId, score);
+        }
+
         String message = isPassed
-                ? "Вы успешно сдали финальный тест!"
+                ? "Вы успешно сдали финальный тест! Сертификат скоро появится в вашем профиле."
                 : "Тест не сдан. Попробуйте еще раз.";
 
         return new QuizResultDto(quiz.getId(), score, isPassed, message);
+    }
+
+    private void publishQuizPassedEvent(Long userId, Long courseId, int score) {
+        try {
+            QuizPassedEvent event = new QuizPassedEvent(userId, courseId, score, LocalDateTime.now());
+            rabbitTemplate.convertAndSend(RabbitMQConfig.LMS_EXCHANGE, RabbitMQConfig.QUIZ_PASSED_ROUTING_KEY, event);
+            log.info("Событие QuizPassedEvent успешно отправлено: userId={}, courseId={}", userId, courseId);
+        } catch (Exception e) {
+            // Логируем сообщение об ошибке без забивания логов огромным стек-трейсом Tomcat
+            log.error("Не удалось опубликовать QuizPassedEvent для userId={}, courseId={}. Причина: {}",
+                    userId, courseId, e.getMessage());
+        }
     }
 
     @Transactional
@@ -115,7 +138,6 @@ public class QuizService {
 
         quiz.setTitle(request.title());
         quiz.setPassScore(request.passScore());
-
         quiz.getQuestions().clear();
 
         request.questions().forEach(qReq -> {

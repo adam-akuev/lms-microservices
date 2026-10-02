@@ -32,6 +32,7 @@
         <module>lms-common</module>
         <module>lms-security</module>
         <module>teacher-service</module>
+        <module>certificate-service</module>
     </modules>
 
     <dependencyManagement>

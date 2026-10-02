@@ -26,7 +26,7 @@ services:
       - "8080:8080"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - JWT_SECRET=${JWT_SECRET}
       - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
     depends_on:
       discovery-server:
@@ -52,7 +52,7 @@ services:
       - "8082:8082"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - JWT_SECRET=${JWT_SECRET}
       - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       - SPRING_RABBITMQ_HOST=lms-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
@@ -72,8 +72,10 @@ services:
       - "8081:8081"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - JWT_SECRET=${JWT_SECRET}
       - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - SPRING_RABBITMQ_HOST=lms-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -90,7 +92,7 @@ services:
       - "8083:8083"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - JWT_SECRET=${JWT_SECRET}
       - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       - SPRING_RABBITMQ_HOST=lms-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
@@ -110,10 +112,57 @@ services:
       - "8084:8084"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
-      - JWT_SECRET=4z7E9x2B5h8k1m4p7r9t0w2y3z5C7E9Gk1n4q6t8v9x0z2B4D6G9J1M4P7R9Sat
+      - JWT_SECRET=${JWT_SECRET}
       - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
       - SPRING_RABBITMQ_HOST=lms-rabbitmq
       - SPRING_RABBITMQ_PORT=5672
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
+  certificate-service:
+    build:
+      context: .
+      dockerfile: certificate-service/Dockerfile
+    image: certificate-service:latest
+    container_name: certificate-service
+    ports:
+      - "8086:8086"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET}
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - SPRING_RABBITMQ_HOST=lms-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+    networks:
+      - lms-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    image: notification-service:latest
+    container_name: notification-service
+    ports:
+      - "8087:8087"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - ZIPKIN_URL=http://zipkin:9411/api/v2/spans
+      - SPRING_RABBITMQ_HOST=lms-rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_USERNAME=${MAILTRAP_USERNAME}
+      - SPRING_MAIL_PASSWORD=${MAILTRAP_PASSWORD}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
     depends_on:
       discovery-server:
         condition: service_healthy

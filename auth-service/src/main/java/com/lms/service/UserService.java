@@ -1,7 +1,9 @@
 package com.lms.service;
 
+import com.lms.common.exception.ResourceNotFoundException;
 import com.lms.common.exception.UserAlreadyExistsException;
 import com.lms.dto.RegisterRequest;
+import com.lms.dto.UserResponse;
 import com.lms.model.User;
 import com.lms.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,9 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public UserResponse getById(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Пользователь не найден!"));
+        return UserResponse.fromEntity(user);
+    }
 
     @Transactional
     public User saveNewUser(RegisterRequest request) {

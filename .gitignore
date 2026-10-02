@@ -21,3 +21,5 @@ Thumbs.db
 
 # Если другие ресурсы тоже локальные
 */src/main/resources/
+
+.env
